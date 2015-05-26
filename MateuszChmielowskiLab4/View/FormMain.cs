@@ -35,16 +35,7 @@ namespace MateuszChmielowskiLab4
         /// <param name="e"></param>
         private void buttonUpdate_Click(object sender, EventArgs e)
         {
-            Customer client = (from customer in dataContext.Customers select customer).First();
-            client.City = "Wrocław";
-            List<Customer> clients = (from customer in dataContext.Customers
-                                      where customer.Country.Substring(0, 1) == "P"
-                                      select customer).ToList();
-            for (int i = 0; i < clients.Count; ++i )
-            {
-                clients[i].City = "Wrocław";
-            }
-            dataContext.SubmitChanges();
+            Customer.UpdateCustomerCity(dataContext, "Wrocław", "p");
         }
         /// <summary>
         /// Dodawanie nowego klienta, o imieniu wpisanym w pole textBoxName i ID wpisanym w pole
@@ -54,20 +45,14 @@ namespace MateuszChmielowskiLab4
         /// <param name="e"></param>
         private void buttonAdd_Click(object sender, EventArgs e)
         {
-            Customer customer = new Customer();
-            if (string.IsNullOrEmpty(textBoxName.Text) || string.IsNullOrEmpty(textBoxID.Text)) 
-            { 
+            if (string.IsNullOrEmpty(textBoxName.Text) || string.IsNullOrEmpty(textBoxID.Text))
+            {
                 MessageBox.Show("Wypełnij wszystkie pola!");
                 return;
             }
-            customer.ContactName = textBoxName.Text;
-            customer.CustomerID = textBoxID.Text;
-            customer.Country = "Polska";
-            customer.City = "Wroclaw";
-            customer.CompanyName = "Kredek";
-            dataContext.Customers.InsertOnSubmit(customer);
-            dataContext.SubmitChanges();
+            Customer.AddNewCustomer(dataContext, textBoxName.Text, textBoxID.Text);
         }
+
         /// <summary>
         /// Usuwanie wszystkich klientów z bazy danych o imieniu Jan.
         /// </summary>
@@ -75,22 +60,21 @@ namespace MateuszChmielowskiLab4
         /// <param name="e"></param>
         private void buttonDelete_Click(object sender, EventArgs e)
         {
-            var clients = (from customer in dataContext.Customers select customer).Where(x=>x.ContactName.Equals("Jan"));
-            dataContext.Customers.DeleteAllOnSubmit(clients);
-            dataContext.SubmitChanges();
+            Customer.DeleteUsers(dataContext, "Jan");
         }
+
+        
         /// <summary>
-        /// Metoda wyciąga z bazy danych łącząc dane z tabeli Customer i Order
+        /// Metoda wyciąga z bazy danych łącząc dane z tabeli Customer i Order.
+        /// Przekazuje referencje dataGridViewContent po to aby zaktualizować jej DataSource.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void buttonCustomerOrders_Click(object sender, EventArgs e)
         {
-            var query = from customer in dataContext.Customers 
-                        join order in dataContext.Orders on customer.CustomerID 
-                        equals order.CustomerID 
-                        select new { customer.ContactName, customer.Address, order.OrderDate, order.ShipName };
-            dataGridViewContent.DataSource = query;
+            Order.SelectCustomerOrdersToDataGridView(dataContext, ref dataGridViewContent);
         }
+
+        
     }
 }
